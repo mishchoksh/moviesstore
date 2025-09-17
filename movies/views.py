@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review
+from .models import Movie, Review, MovieRequest
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 
 def index(request):
     search_term = request.GET.get('search')
@@ -61,3 +62,27 @@ def delete_review(request, id, review_id):
     review = get_object_or_404(Review, id=review_id, user=request.user)
     review.delete()
     return redirect('movies.show', id=id)
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def requests_page(request):
+    if request.method == 'POST':
+        # Create new request
+        if 'action' in request.POST and request.POST['action'] == 'create':
+            name = request.POST.get('name', '').strip()
+            description = request.POST.get('description', '').strip()
+            if name and description:
+                MovieRequest.objects.create(user=request.user, name=name, description=description)
+            return redirect('movies.requests')
+        # Delete existing request
+        if 'action' in request.POST and request.POST['action'] == 'delete':
+            req_id = request.POST.get('request_id')
+            if req_id:
+                movie_request = get_object_or_404(MovieRequest, id=req_id, user=request.user)
+                movie_request.delete()
+            return redirect('movies.requests')
+
+    template_data = {}
+    template_data['title'] = 'My Movie Requests'
+    template_data['requests'] = MovieRequest.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'movies/requests.html', {'template_data': template_data})
