@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col-md-8 mx-auto mb-3">
+        <h2>Create Movie Petition</h2>
+        <hr />
+        <p class="text-muted">Create a petition to request a movie be added to our catalog. Other users can vote on your petition!</p>
+      </div>
+    </div>
+
+    {% if messages %}
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        <div class="card shadow p-4 rounded">
+          <div class="card-body">
+            <form method="POST">
+              {% csrf_token %}
+              
+              <div class="mb-3">
+                <label for="title" class="form-label">Petition Title</label>
+                <input type="text" class="form-control" id="title" name="title" 
+                       placeholder="e.g., Add The Dark Knight to our catalog" required>
+                <div class="form-text">A catchy title for your petition</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="movie_title" class="form-label">Movie Title</label>
+                <input type="text" class="form-control" id="movie_title" name="movie_title" 
+                       placeholder="e.g., The Dark Knight" required>
+                <div class="form-text">The exact title of the movie you want added</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="4" 
+                          placeholder="Explain why this movie should be added to our catalog..." required></textarea>
+                <div class="form-text">Convince others why this movie deserves to be in our collection</div>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <a href="{% url 'movies.petitions' %}" class="btn btn-secondary">
+                  <i class="fas fa-arrow-left"></i> Back to Petitions
+                </a>
+                <button type="submit" class="btn bg-dark text-white">
+                  <i class="fas fa-paper-plane"></i> Create Petition
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

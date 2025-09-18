@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review, Reply
+from .models import Movie, Review, Reply, Petition, PetitionVote
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 def index(request):
     search_term = request.GET.get('search')
@@ -80,3 +81,48 @@ def create_reply(request, id, review_id, parent_reply_id=None):
         return redirect('movies.show', id=id)
     else:
         return redirect('movies.show', id=id)
+
+def petitions(request):
+    petitions_list = Petition.objects.all().order_by('-created_at')
+    template_data = {}
+    template_data['title'] = 'Movie Petitions'
+    template_data['petitions'] = petitions_list
+    return render(request, 'movies/petitions.html', {'template_data': template_data})
+
+@login_required
+def create_petition(request):
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        movie_title = request.POST.get('movie_title', '').strip()
+        
+        if title and description and movie_title:
+            petition = Petition.objects.create(
+                title=title,
+                description=description,
+                movie_title=movie_title,
+                created_by=request.user
+            )
+            messages.success(request, 'Petition created successfully!')
+            return redirect('movies.petitions')
+        else:
+            messages.error(request, 'All fields are required.')
+    
+    template_data = {}
+    template_data['title'] = 'Create Petition'
+    return render(request, 'movies/create_petition.html', {'template_data': template_data})
+
+@login_required
+def vote_petition(request, petition_id):
+    petition = get_object_or_404(Petition, id=petition_id)
+    
+    # Check if user already voted
+    existing_vote = PetitionVote.objects.filter(petition=petition, user=request.user).first()
+    
+    if existing_vote:
+        messages.warning(request, 'You have already voted for this petition.')
+    else:
+        PetitionVote.objects.create(petition=petition, user=request.user)
+        messages.success(request, f'You voted for "{petition.movie_title}"!')
+    
+    return redirect('movies.petitions')

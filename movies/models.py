@@ -35,3 +35,31 @@ class Reply(models.Model):
     @property
     def is_nested(self):
         return self.parent_reply is not None
+
+class Petition(models.Model):
+    id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    movie_title = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_petitions')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Petition: {self.movie_title}"
+
+    @property
+    def vote_count(self):
+        return self.votes.count()
+
+class PetitionVote(models.Model):
+    id = models.AutoField(primary_key=True)
+    petition = models.ForeignKey(Petition, on_delete=models.CASCADE, related_name='votes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('petition', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} voted for {self.petition.movie_title}"
