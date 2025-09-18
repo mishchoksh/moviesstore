@@ -54,10 +54,9 @@
             <div class="mt-3 ms-3">
               <h6 class="text-muted">Replies:</h6>
               {% for reply in review.replies.all %}
-              <div class="border-start border-3 border-secondary ps-3 mb-2">
-                <small class="text-muted">{{ reply.user.username }} - {{ reply.date }}</small>
-                <p class="mb-1">{{ reply.comment }}</p>
-              </div>
+                {% if not reply.parent_reply %}
+                  {% include 'movies/reply_item.html' with reply=reply movie_id=template_data.movie.id review_id=review.id %}
+                {% endif %}
               {% endfor %}
             </div>
             {% endif %}

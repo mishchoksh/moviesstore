@@ -63,13 +63,19 @@ def delete_review(request, id, review_id):
     return redirect('movies.show', id=id)
 
 @login_required
-def create_reply(request, id, review_id):
+def create_reply(request, id, review_id, parent_reply_id=None):
     if request.method == 'POST' and request.POST['comment'] != '':
         review = get_object_or_404(Review, id=review_id)
         reply = Reply()
         reply.comment = request.POST['comment']
         reply.review = review
         reply.user = request.user
+        
+        # Handle nested replies
+        if parent_reply_id:
+            parent_reply = get_object_or_404(Reply, id=parent_reply_id, review=review)
+            reply.parent_reply = parent_reply
+        
         reply.save()
         return redirect('movies.show', id=id)
     else:

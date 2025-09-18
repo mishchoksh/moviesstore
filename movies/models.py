@@ -27,6 +27,11 @@ class Reply(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='replies')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent_reply = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='child_replies')
 
     def __str__(self):
         return f"Reply {self.id} to Review {self.review.id}"
+
+    @property
+    def is_nested(self):
+        return self.parent_reply is not None

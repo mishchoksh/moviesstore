@@ -1,0 +1,31 @@
+<div class="border-start border-3 border-secondary ps-3 mb-2">
+  <small class="text-muted">{{ reply.user.username }} - {{ reply.date }}</small>
+  <p class="mb-1">{{ reply.comment }}</p>
+  
+  <!-- Reply to this reply button -->
+  {% if user.is_authenticated %}
+  <div class="mt-2">
+    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#nestedReplyForm{{ reply.id }}" aria-expanded="false">
+      Reply
+    </button>
+    <div class="collapse mt-2" id="nestedReplyForm{{ reply.id }}">
+      <form method="POST" action="{% url 'movies.create_nested_reply' id=movie_id review_id=review_id parent_reply_id=reply.id %}">
+        {% csrf_token %}
+        <div class="input-group">
+          <input type="text" name="comment" class="form-control" placeholder="Write a reply..." required>
+          <button class="btn btn-outline-primary" type="submit">Reply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+  
+  <!-- Nested replies -->
+  {% if reply.child_replies.all %}
+  <div class="mt-2 ms-3">
+    {% for child_reply in reply.child_replies.all %}
+      {% include 'movies/reply_item.html' with reply=child_reply movie_id=movie_id review_id=review_id %}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
